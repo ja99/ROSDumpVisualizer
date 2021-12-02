@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/binary"
-	"fmt"
 	"github.com/aler9/goroslib"
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -21,22 +20,14 @@ func onCameraMessage(msg *sensor_msgs.Image) {
 	//fmt.Printf("Incoming: %+v\n", msg)
 	image.rowLength = int(msg.Width)
 
-	fmt.Println("data length", len(msg.Data))
-
-	m := int32(0)
-
 	image.lock.Lock()
 	for xi := int32(0); xi < int32(msg.Width); xi++ {
 		for yi := int32(0); yi < int32(msg.Height); yi++ {
 			val := (xi + yi*int32(msg.Width)) * 3
 			color := rl.Color{msg.Data[val], msg.Data[val+1], msg.Data[val+2], 255}
 			image.image[[2]int32{xi, yi}] = color
-
-			m = int32(math.Max(float64(m), float64(val)))
 		}
 	}
-	fmt.Println("max:", m)
-
 	image.lock.Unlock()
 }
 
@@ -61,15 +52,13 @@ func onLidarMessage(msg *sensor_msgs.PointCloud2) {
 }
 
 func onSimLidarMessage(msg *sensor_msgs.PointCloud) {
-	for i, point := range msg.Points {
-		v := rl.Vector3{point.X, point.Y, point.Z}
-
-	}
-
 	points.lock.Lock()
-	points.points = append(points.points, v)
+	points.points = []rl.Vector3{}
+	for _, point := range msg.Points {
+		v := rl.Vector3{point.Y, point.Z, point.X}
+		points.points = append(points.points, v)
+	}
 	points.lock.Unlock()
-
 }
 
 func HandleConnection() {
@@ -105,6 +94,18 @@ func HandleConnection() {
 		panic(err)
 	}
 	defer lidarSubscriber.Close()
+
+	// create a subscriber
+	simLidarSubscriber, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
+		Node: n,
+		// ToDo: Make sure this is the correct topic
+		Topic:    "/velodyne",
+		Callback: onSimLidarMessage,
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer simLidarSubscriber.Close()
 
 	// wait for CTRL-C
 	c := make(chan os.Signal, 1)

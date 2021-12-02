@@ -63,17 +63,18 @@ func DrawCubes() {
 	points.lock.Lock()
 	for _, point := range points.points {
 		//rl.DrawCube(point, 1.0, 1.0, 1.0, rl.Red)
-		rl.DrawCubeWires(point, 0.1, 0.1, 0.1, rl.Blue)
+		rl.DrawCube(point, 0.1, 0.1, 0.1, rl.Blue)
 	}
 	points.lock.Unlock()
 }
 
 func DrawImage() {
+	drawsize := int32(3)
 
 	image.lock.RLock()
-	for xi := int32(0); xi < int32(image.rowLength); xi++ {
-		for yi := int32(0); yi < int32(len(image.image)/image.rowLength); yi++ {
-			rl.DrawPixel(xi+0, yi+0, image.image[[2]int32{xi, yi}])
+	for xi := int32(0); xi < int32(image.rowLength); xi += drawsize {
+		for yi := int32(0); yi < int32(len(image.image)/image.rowLength); yi += drawsize {
+			rl.DrawPixel(xi/drawsize, yi/drawsize, image.image[[2]int32{xi, yi}])
 		}
 	}
 	image.lock.RUnlock()
