@@ -63,7 +63,7 @@ func DrawCubes() {
 	points.lock.Lock()
 	for _, point := range points.points {
 		//rl.DrawCube(point, 1.0, 1.0, 1.0, rl.Red)
-		rl.DrawCube(point, 0.1, 0.1, 0.1, rl.Blue)
+		rl.DrawCube(point, 0.05, 0.05, 0.05, rl.Blue)
 	}
 	points.lock.Unlock()
 }
