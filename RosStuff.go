@@ -12,28 +12,32 @@ import (
 )
 
 var (
-	cameraSubscriber *goroslib.Subscriber
-	lidarSubscriber  *goroslib.Subscriber
+	cameraSubscriber   *goroslib.Subscriber
+	lidarSubscriber    *goroslib.Subscriber
+	simLidarSubscriber *goroslib.Subscriber
 )
 
 func onCameraMessage(msg *sensor_msgs.Image) {
-	fmt.Printf("Incoming: %+v\n", msg)
-	image.image = rl.Image{
-		Width:   int32(msg.Width),
-		Height: int32(msg.Height),
-		Mipmaps: 0,
-		Format:  rl.UncompressedR8g8b8a8,
-	}
+	//fmt.Printf("Incoming: %+v\n", msg)
+	image.rowLength = int(msg.Width)
 
+	fmt.Println("data length", len(msg.Data))
+
+	m := int32(0)
+
+	image.lock.Lock()
 	for xi := int32(0); xi < int32(msg.Width); xi++ {
-		for yi := int32(0); yi < int32(msg.Width); yi++ {
-			val := xi+yi*image.image.Width
-			color := rl.Color{msg.Data[val],msg.Data[val+1],msg.Data[val+1],255}
-			image.lock.Lock()
-			rl.ImageDrawPixel(&image.image,xi,yi,color)
-			image.lock.Unlock()
+		for yi := int32(0); yi < int32(msg.Height); yi++ {
+			val := (xi + yi*int32(msg.Width)) * 3
+			color := rl.Color{msg.Data[val], msg.Data[val+1], msg.Data[val+2], 255}
+			image.image[[2]int32{xi, yi}] = color
+
+			m = int32(math.Max(float64(m), float64(val)))
 		}
 	}
+	fmt.Println("max:", m)
+
+	image.lock.Unlock()
 }
 
 func Float32frombytes(bytes []byte) float32 {
@@ -43,12 +47,24 @@ func Float32frombytes(bytes []byte) float32 {
 }
 
 func onLidarMessage(msg *sensor_msgs.PointCloud2) {
-	fmt.Printf("Incoming: %+v\n", msg)
+	//fmt.Printf("Incoming: %+v\n", msg)
 	x := Float32frombytes(msg.Data[:4])
 	y := Float32frombytes(msg.Data[4:8])
 	z := Float32frombytes(msg.Data[8:12])
 
-	v:= rl.Vector3{x,y,z}
+	v := rl.Vector3{x, y, z}
+
+	points.lock.Lock()
+	points.points = append(points.points, v)
+	points.lock.Unlock()
+
+}
+
+func onSimLidarMessage(msg *sensor_msgs.PointCloud) {
+	for i, point := range msg.Points {
+		v := rl.Vector3{point.X, point.Y, point.Z}
+
+	}
 
 	points.lock.Lock()
 	points.points = append(points.points, v)

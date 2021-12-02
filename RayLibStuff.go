@@ -11,15 +11,16 @@ type Points struct {
 }
 
 type Pic struct {
-	image rl.Image
-	lock  sync.RWMutex
+	image     map[[2]int32]rl.Color
+	lock      sync.RWMutex
+	rowLength int
 }
 
 var (
 	camera        = rl.Camera3D{}
 	cameraForward = rl.Vector3{0, 0, 1}
 	points        = Points{[]rl.Vector3{}, sync.RWMutex{}}
-	image         = Pic{rl.Image{}, sync.RWMutex{}}
+	image         = Pic{make(map[[2]int32]rl.Color), sync.RWMutex{}, 1}
 )
 
 var (
@@ -27,14 +28,8 @@ var (
 	cameraLookSpeed = float32(0.0001)
 )
 
-func main() {
-	go HandleConnection()
-	Init()
-	rl.CloseWindow()
-}
-
 func Init() {
-	rl.InitWindow(1000, 1000, "raylib [core] example - 3d mode")
+	rl.InitWindow(1600, 1100, "raylib [core] example - 3d mode")
 
 	camera.Position = rl.NewVector3(0.0, 5.0, -10.0)
 	camera.Target = rl.NewVector3(0.0, 0.0, 0.0)
@@ -64,22 +59,23 @@ func Update() {
 
 }
 
-
-
 func DrawCubes() {
-	points.lock.RLock()
+	points.lock.Lock()
 	for _, point := range points.points {
 		//rl.DrawCube(point, 1.0, 1.0, 1.0, rl.Red)
 		rl.DrawCubeWires(point, 0.1, 0.1, 0.1, rl.Blue)
 	}
-	points.lock.RUnlock()
+	points.lock.Unlock()
 }
 
 func DrawImage() {
+
 	image.lock.RLock()
-	texture := rl.LoadTextureFromImage(&image.image)
-	points.lock.RUnlock()
+	for xi := int32(0); xi < int32(image.rowLength); xi++ {
+		for yi := int32(0); yi < int32(len(image.image)/image.rowLength); yi++ {
+			rl.DrawPixel(xi+0, yi+0, image.image[[2]int32{xi, yi}])
+		}
+	}
+	image.lock.RUnlock()
 
-	rl.DrawTexture(texture, 0,0,rl.Color{0,0,0,0})
 }
-
