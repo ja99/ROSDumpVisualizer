@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/aler9/goroslib v0.0.0-20211123121142-5c9942d1704e
+	github.com/bradhe/stopwatch v0.0.0-20190618212248-a58cccc508ea
 	github.com/gen2brain/raylib-go/raylib v0.0.0-20211114111602-29ba3cc50849
-	github.com/ungerik/go3d v0.0.0-20211026193542-07217314a07d
 )
 
 require (

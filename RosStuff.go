@@ -14,17 +14,23 @@ var (
 	cameraSubscriber   *goroslib.Subscriber
 	lidarSubscriber    *goroslib.Subscriber
 	simLidarSubscriber *goroslib.Subscriber
+	cameraStopwatch    Stopwatch
+	cameraMs           int64
+	lidarStopwatch     Stopwatch
+	lidarMs            int64
 )
 
 func onCameraMessage(msg *sensor_msgs.Image) {
+	cameraMs = cameraStopwatch.ElapsedMilliseconds()
+	cameraStopwatch.Start()
 	//fmt.Printf("Incoming: %+v\n", msg)
 	image.rowLength = int(msg.Width)
 
 	image.lock.Lock()
 	for xi := int32(0); xi < int32(msg.Width); xi++ {
 		for yi := int32(0); yi < int32(msg.Height); yi++ {
-			val := (xi + yi*int32(msg.Width)) * 3
-			color := rl.Color{msg.Data[val], msg.Data[val+1], msg.Data[val+2], 255}
+			index := (xi + yi*int32(msg.Width)) * 3
+			color := rl.Color{msg.Data[index], msg.Data[index+1], msg.Data[index+2], 255}
 			image.image[[2]int32{xi, yi}] = color
 		}
 	}
@@ -38,20 +44,28 @@ func Float32frombytes(bytes []byte) float32 {
 }
 
 func onLidarMessage(msg *sensor_msgs.PointCloud2) {
-	//fmt.Printf("Incoming: %+v\n", msg)
-	x := Float32frombytes(msg.Data[:4])
-	y := Float32frombytes(msg.Data[4:8])
-	z := Float32frombytes(msg.Data[8:12])
+	lidarMs = lidarStopwatch.ElapsedMilliseconds()
+	lidarStopwatch.Start()
 
-	v := rl.Vector3{x, y, z}
+	tempPoints := []rl.Vector3{}
 
+	for i := 0; i < len(msg.Data)-12; i += 12 {
+		x := Float32frombytes(msg.Data[i+0 : i+4])
+		y := Float32frombytes(msg.Data[i+4 : i+8])
+		z := Float32frombytes(msg.Data[i+8 : i+12])
+
+		v := rl.Vector3{x, y, z}
+
+		tempPoints = append(tempPoints, v)
+	}
 	points.lock.Lock()
-	points.points = append(points.points, v)
+	points.points = append(points.points, tempPoints...)
 	points.lock.Unlock()
-
 }
 
 func onSimLidarMessage(msg *sensor_msgs.PointCloud) {
+	lidarMs = lidarStopwatch.ElapsedMilliseconds()
+	lidarStopwatch.Start()
 	points.lock.Lock()
 	points.points = []rl.Vector3{}
 	for _, point := range msg.Points {

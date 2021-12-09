@@ -2,6 +2,7 @@ package main
 
 import (
 	rl "github.com/gen2brain/raylib-go/raylib"
+	"strconv"
 	"sync"
 )
 
@@ -40,9 +41,12 @@ func Init() {
 	rl.SetTargetFPS(75)
 	//rl.SetCameraMode(camera, rl.CameraFirstPerson)
 
+	//ToDo: Display HZ of camerafeed
+	//ToDo: Display HZ of Lidarfeed
+
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
-		rl.ClearBackground(rl.RayWhite)
+		rl.ClearBackground(rl.Color{45, 47, 48, 255})
 		Update()
 		rl.EndDrawing()
 	}
@@ -55,6 +59,8 @@ func Update() {
 	rl.EndMode3D()
 
 	DrawImage()
+	rl.DrawText("camera ms: "+strconv.Itoa(int(cameraMs)), 1350, 10, 30, rl.Blue)
+	rl.DrawText("lidar ms: "+strconv.Itoa(int(lidarMs)), 1350, 50, 30, rl.Blue)
 	rl.DrawFPS(10, 10)
 
 }
