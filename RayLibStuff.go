@@ -11,8 +11,11 @@ type Points struct {
 	lock   sync.RWMutex
 }
 
+const picWidth = int32(1920)
+const picHeight = int32(1200)
+
 type Pic struct {
-	image     map[[2]int32]rl.Color
+	image     [picWidth][picHeight]rl.Color
 	lock      sync.RWMutex
 	rowLength int
 }
@@ -20,7 +23,7 @@ type Pic struct {
 var (
 	camera = rl.Camera3D{}
 	points = Points{[]rl.Vector3{}, sync.RWMutex{}}
-	image  = Pic{make(map[[2]int32]rl.Color), sync.RWMutex{}, 1}
+	image  = Pic{[picWidth][picHeight]rl.Color{}, sync.RWMutex{}, 1}
 )
 
 func Init() {
@@ -71,12 +74,12 @@ func DrawCubes() {
 }
 
 func DrawImage() {
-	drawsize := int32(4)
+	drawsize := int32(5)
 
 	image.lock.RLock()
-	for xi := int32(0); xi < int32(image.rowLength); xi += drawsize {
-		for yi := int32(0); yi < int32(len(image.image)/image.rowLength); yi += drawsize {
-			rl.DrawPixel(xi/drawsize, yi/drawsize, image.image[[2]int32{xi, yi}])
+	for xi := int32(0); xi < int32(len(image.image)); xi += drawsize {
+		for yi := int32(0); yi < int32(len(image.image[0])); yi += drawsize {
+			rl.DrawPixel(xi/drawsize, yi/drawsize, image.image[xi][yi])
 		}
 	}
 	image.lock.RUnlock()
