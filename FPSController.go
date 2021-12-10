@@ -12,28 +12,22 @@ var (
 
 func CameraControls() {
 	if rl.IsKeyDown(rl.KeyW) {
-		//camera.Position = Add(camera.Position, Multiply(cameraForward,cameraMoveSpeed) )
 		camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Multiply(cameraForward, cameraMoveSpeed))
 	}
 	if rl.IsKeyDown(rl.KeyD) {
-		//camera.Position = Add(camera.Position, Multiply(CameraLeft(),cameraMoveSpeed))
 		camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Multiply(CameraLeft(), cameraMoveSpeed))
 	}
 	if rl.IsKeyDown(rl.KeyS) {
-		//camera.Position = Add(camera.Position,  Multiply(CameraBack(),cameraMoveSpeed))
 		camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Multiply(CameraBack(), cameraMoveSpeed))
 
 	}
 	if rl.IsKeyDown(rl.KeyA) {
-		//camera.Position = Add(camera.Position, Multiply(CameraRight(),cameraMoveSpeed))
 		camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Multiply(CameraRight(), cameraMoveSpeed))
 	}
 	if rl.IsKeyDown(rl.KeyQ) {
-		//camera.Position = Add(camera.Position, Multiply(CameraDown(), cameraMoveSpeed))
 		camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Multiply(CameraDown(), cameraMoveSpeed))
 	}
 	if rl.IsKeyDown(rl.KeyE) {
-		//camera.Position = Add(camera.Position, Multiply(CameraUp(), cameraMoveSpeed))
 		camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Multiply(CameraUp(), cameraMoveSpeed))
 
 	}
@@ -64,7 +58,6 @@ func CameraControls() {
 		cameraForward = RotateVectorByQuaternion(cameraForward, cameraRotQ)
 		cameraForward = rl.Vector3Normalize(cameraForward)
 
-		//cameraForward = rl.Vector3{cameraForward.X, fmath.Max(-0.8, cameraForward.Y), cameraForward.Z}
 		camera.Target = Add(camera.Position, cameraForward)
 	}
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/binary"
-	"fmt"
 	"github.com/aler9/goroslib"
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -23,25 +22,19 @@ var (
 )
 
 func onCameraMessage(msg *sensor_msgs.Image) {
-	sw := Stopwatch{}
 
 	cameraMs = cameraStopwatch.ElapsedMilliseconds()
 	cameraStopwatch.Start()
-	//fmt.Printf("Incoming: %+v\n", msg)
 
-	sw.Start()
-
-	for xi := int32(0); xi < int32(msg.Width); xi++ {
-		for yi := int32(0); yi < int32(msg.Height); yi++ {
+	for xi := int32(0); xi < int32(msg.Width); xi += 1 {
+		for yi := int32(0); yi < int32(msg.Height); yi += 1 {
 			index := (xi + yi*int32(msg.Width)) * 3
-			//color := rl.Color{msg.Data[index], msg.Data[index+1], msg.Data[index+2], 255}
 			tempImg[xi][yi].R = msg.Data[index+0]
 			tempImg[xi][yi].G = msg.Data[index+1]
 			tempImg[xi][yi].B = msg.Data[index+2]
 			tempImg[xi][yi].A = 255
 		}
 	}
-	fmt.Println(sw.ElapsedMilliseconds())
 	image.lock.Lock()
 	image.image = tempImg
 	image.rowLength = int(msg.Width)
@@ -73,6 +66,7 @@ func onLidarMessage(msg *sensor_msgs.PointCloud2) {
 	points.lock.Lock()
 	points.points = tempPoints
 	points.lock.Unlock()
+
 }
 
 func onSimLidarMessage(msg *sensor_msgs.PointCloud) {

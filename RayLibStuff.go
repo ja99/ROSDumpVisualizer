@@ -11,8 +11,12 @@ type Points struct {
 	lock   sync.RWMutex
 }
 
+// Set to 1920x1200 for real camera and 1024x640 for simulator
 const picWidth = int32(1920)
 const picHeight = int32(1200)
+
+//To make the camera image smaller
+const drawEveryXThPixel = int32(5)
 
 type Pic struct {
 	image     [picWidth][picHeight]rl.Color
@@ -65,21 +69,19 @@ func Update() {
 }
 
 func DrawCubes() {
-	points.lock.Lock()
+	points.lock.RLock()
 	for _, point := range points.points {
-		//rl.DrawCube(point, 1.0, 1.0, 1.0, rl.Red)
 		rl.DrawCube(point, 0.05, 0.05, 0.05, rl.Blue)
 	}
-	points.lock.Unlock()
+	points.lock.RUnlock()
 }
 
 func DrawImage() {
-	drawsize := int32(5)
 
 	image.lock.RLock()
-	for xi := int32(0); xi < int32(len(image.image)); xi += drawsize {
-		for yi := int32(0); yi < int32(len(image.image[0])); yi += drawsize {
-			rl.DrawPixel(xi/drawsize, yi/drawsize, image.image[xi][yi])
+	for xi := int32(0); xi < int32(len(image.image)); xi += drawEveryXThPixel {
+		for yi := int32(0); yi < int32(len(image.image[0])); yi += drawEveryXThPixel {
+			rl.DrawPixel(xi/drawEveryXThPixel, yi/drawEveryXThPixel, image.image[xi][yi])
 		}
 	}
 	image.lock.RUnlock()
