@@ -49,29 +49,30 @@ func onLidarMessage(msg *sensor_msgs.PointCloud2) {
 
 	tempPoints := []rl.Vector3{}
 
-	for i := 0; i < len(msg.Data)-12; i += 12 {
+	for i := 0; i < len(msg.Data)-12; i += 32 {
 		x := Float32frombytes(msg.Data[i+0 : i+4])
 		y := Float32frombytes(msg.Data[i+4 : i+8])
 		z := Float32frombytes(msg.Data[i+8 : i+12])
 
-		v := rl.Vector3{x, y, z}
+		v := rl.Vector3{y, z, x}
 
 		tempPoints = append(tempPoints, v)
 	}
 	points.lock.Lock()
-	points.points = append(points.points, tempPoints...)
+	points.points = tempPoints
 	points.lock.Unlock()
 }
 
 func onSimLidarMessage(msg *sensor_msgs.PointCloud) {
 	lidarMs = lidarStopwatch.ElapsedMilliseconds()
 	lidarStopwatch.Start()
-	points.lock.Lock()
-	points.points = []rl.Vector3{}
+	tempPoints := []rl.Vector3{}
 	for _, point := range msg.Points {
 		v := rl.Vector3{point.Y, point.Z, point.X}
-		points.points = append(points.points, v)
+		tempPoints = append(points.points, v)
 	}
+	points.lock.Lock()
+	points.points = tempPoints
 	points.lock.Unlock()
 }
 
