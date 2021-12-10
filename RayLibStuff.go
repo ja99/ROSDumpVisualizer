@@ -18,15 +18,9 @@ type Pic struct {
 }
 
 var (
-	camera        = rl.Camera3D{}
-	cameraForward = rl.Vector3{0, 0, 1}
-	points        = Points{[]rl.Vector3{}, sync.RWMutex{}}
-	image         = Pic{make(map[[2]int32]rl.Color), sync.RWMutex{}, 1}
-)
-
-var (
-	cameraMoveSpeed = float32(0.1)
-	cameraLookSpeed = float32(0.0001)
+	camera = rl.Camera3D{}
+	points = Points{[]rl.Vector3{}, sync.RWMutex{}}
+	image  = Pic{make(map[[2]int32]rl.Color), sync.RWMutex{}, 1}
 )
 
 func Init() {
@@ -53,6 +47,7 @@ func Init() {
 }
 
 func Update() {
+	CameraControls()
 	rl.BeginMode3D(camera)
 	DrawCubes()
 	rl.DrawGrid(100, 1.0)
@@ -61,6 +56,7 @@ func Update() {
 	DrawImage()
 	rl.DrawText("camera ms: "+strconv.Itoa(int(cameraMs)), 1350, 10, 30, rl.Blue)
 	rl.DrawText("lidar ms: "+strconv.Itoa(int(lidarMs)), 1350, 50, 30, rl.Blue)
+	rl.DrawText("Press F1 to toggle mouse-catching and FPS controls", 500, 10, 20, rl.White)
 	rl.DrawFPS(10, 10)
 
 }
@@ -75,7 +71,7 @@ func DrawCubes() {
 }
 
 func DrawImage() {
-	drawsize := int32(3)
+	drawsize := int32(4)
 
 	image.lock.RLock()
 	for xi := int32(0); xi < int32(image.rowLength); xi += drawsize {
